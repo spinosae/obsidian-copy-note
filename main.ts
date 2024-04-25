@@ -59,10 +59,13 @@ export default class MyPlugin extends Plugin {
 		const { links, embeds } = noteCache;
 		const attachments = [links ?? [], embeds ?? []]
 			.flat()
-			.map((l) => this.app.vault.getAbstractFileByPath(l.link))
-			.filter(
-				(f) => f instanceof TFile && f.extension != "md"
-			) as TFile[];
+			.map((l) =>
+				this.app.metadataCache.getFirstLinkpathDest(
+					l.link,
+					"attachments"
+				)
+			)
+			.filter((f) => f != null && f.extension != "md") as TFile[];
 
 		const destDir = dest.path;
 		// Copy the note to the destination folder
@@ -75,8 +78,8 @@ export default class MyPlugin extends Plugin {
 		// Copy all attachments referenced in the note
 		for (const attachment of attachments) {
 			toCopy.push({
-				src: attachment!,
-				dest: `${destDir}/attachments/${attachment!.name}`,
+				src: attachment,
+				dest: `${destDir}/attachments/${attachment.name}`,
 			});
 		}
 
